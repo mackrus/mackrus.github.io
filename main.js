@@ -3,8 +3,7 @@ import './style.css'
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { WebGLRenderer } from 'three';
-//const { onRequest } = require("firebase-functions/v2/https");
-//const logger = require("firebase-functions/logger");
+
 
 const scene = new THREE.Scene();
 
