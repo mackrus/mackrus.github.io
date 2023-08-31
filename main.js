@@ -1,8 +1,8 @@
 import './style.css'
 
-import * as THREE from './three_js/build/three.module.js';
+import * as THREE from 'three';
 import { OrbitControls } from './three_js/examples/jsm/controls/OrbitControls.js';
-import { WebGLRenderer } from './three_js/build/three.module.js';
+import { WebGLRenderer } from 'three';
 
 
 const scene = new THREE.Scene();
