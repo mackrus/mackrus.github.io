@@ -1,8 +1,10 @@
 import './style.css'
 
-import * as THREE from 'three';
+
+
+import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.155.0/three.min.js';
 import { OrbitControls } from '../three_js/examples/jsm/controls/OrbitControls.js';
-import { WebGLRenderer } from 'three';
+import { WebGLRenderer } from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.155.0/three.min.js';
 
 
 const scene = new THREE.Scene();
