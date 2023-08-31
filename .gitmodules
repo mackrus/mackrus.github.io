@@ -1,0 +1,3 @@
+[submodule "portfolio/mackrus.github.io/three.js"]
+    path = portfolio/mackrus.github.io/three.js
+    url = https://github.com/mrdoob/three.js
