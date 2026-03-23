@@ -125,40 +125,6 @@ async function main() {
     const sunSprite = createMinimalSprite(5, true); // Sun gets a solid circle
     sunGroup.add(sunSprite);
 
-    // Create a ring texture for minimal mode
-    function createRingTexture() {
-        const canvas = document.createElement("canvas");
-        canvas.width = 512;
-        canvas.height = 512;
-        const ctx = canvas.getContext("2d")!;
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 12;
-        ctx.beginPath();
-        ctx.arc(256, 256, 240, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(256, 256, 180, 0, Math.PI * 2);
-        ctx.stroke();
-        const tex = new THREE.CanvasTexture(canvas);
-        tex.needsUpdate = true;
-        return tex;
-    }
-    const ringTexture = createRingTexture();
-    const ringSpriteMaterial = new THREE.SpriteMaterial({ 
-        map: ringTexture, 
-        color: 0xffffff, 
-        transparent: true,
-        depthWrite: false
-    });
-
-    function createMinimalRing(size: number) {
-        const sprite = new THREE.Sprite(ringSpriteMaterial);
-        sprite.scale.set(size * 3.5, size * 3.5, 1);
-        sprite.visible = false;
-        sprite.name = "minimalRing";
-        return sprite;
-    }
-
     // Add a soft corona glow
     const coronaGeometry = new THREE.SphereGeometry(5.3, 64, 64);
     const coronaMaterial = new THREE.MeshBasicMaterial({
