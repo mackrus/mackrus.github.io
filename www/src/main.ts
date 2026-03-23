@@ -132,11 +132,8 @@ async function main() {
     ];
 
     function hasContent(name: string) {
-        // Any named object in our solar system is a valid target for the camera
-        if (name === "Sun" || planetMeshes[name] || satelliteMeshes[name]) return true;
-        
-        const section = document.getElementById(`section-${name}`);
-        return !!section;
+        // All named bodies in our system are valid targets for the camera
+        return !!(name === "Sun" || planetMeshes[name] || satelliteMeshes[name]);
     }
 
     const worldLabelContainer = document.getElementById("world-labels")!;
@@ -144,7 +141,10 @@ async function main() {
 
     function createWorldLabel(name: string) {
         const section = document.getElementById(`section-${name}`);
-        if (!section || !hasContent(name)) return;
+        
+        // ONLY create a label if there is an actual HTML section for this body
+        // This allows bodies like Mars to be clickable without having a floating label
+        if (!section) return;
         
         // Get content type: data-label attribute or the first h2/h1 text
         let labelText = section.getAttribute("data-label");
