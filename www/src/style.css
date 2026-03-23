@@ -116,6 +116,21 @@ main {
   margin-bottom: 0.5rem;
 }
 
+#section-Sun h1 {
+  font-size: 4rem;
+  letter-spacing: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.sun-subtitle {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.2rem;
+  opacity: 0.6;
+  text-transform: uppercase;
+  margin: 0;
+}
+
 .hud-section {
   max-width: 900px;
   width: 85%;

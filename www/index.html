@@ -14,64 +14,59 @@
     
     <nav id="ui-nav">
       <button data-target="Sun">Home</button>
-      <button data-target="Earth">Profile</button>
+      <button data-target="Saturn">Profile</button>
       <button data-target="Jupiter">Projects</button>
-      <button data-target="Saturn">Contact</button>
-      <button data-target="Station-01" class="nav-highlight">System Guide</button>
+      <button data-target="Earth">Contact</button>
+      <button data-target="Mercury" class="nav-highlight">Help</button>
     </nav>
 
     <main id="app-content">
       <!-- SUN / HOME -->
       <section id="section-Sun" class="planet-label content-section active">
         <h1>Markus Bajlo</h1>
+        <p class="sun-subtitle">Click on the Sun to reveal destinations</p>
       </section>
 
       <!-- PLANET OVERVIEWS -->
-      <section id="section-Earth" class="planet-label content-section">
-        <h2>Profile</h2>
-      </section>
-
-      <section id="section-Jupiter" class="planet-label content-section">
-        <h2>Projects</h2>
-      </section>
-
-      <section id="section-Saturn" class="planet-label content-section">
-        <h2>Contact</h2>
-      </section>
-
-
-      <!-- SATELLITE HUDs -->
-      <section id="section-Station-01" class="hud-section content-section" data-label="SYSTEM GUIDE">
+      <section id="section-Mercury" class="hud-section content-section" data-label="HELP">
         <div class="hud-header">Core / Protocol 00</div>
         <div class="hud-content">
           <h2>System Navigation</h2>
-          
+
           <div class="project-item">
             <h3>Orbital Travel</h3>
             <p><strong>Click</strong> any planet or satellite once to initiate high-speed travel and enter its local orbit.</p>
-          </div>
-
-          <div class="project-item">
-            <h3>Data Access</h3>
-            <p><strong>Click again</strong> on the body you are currently orbiting to activate its HUD interface and access detailed archives or live project links.</p>
+            <p><strong>Click again</strong> on the body you are currently orbiting to return to the Sun.</p>
           </div>
 
           <div class="project-item">
             <h3>Perspective Controls</h3>
-            <p><strong>Rotate:</strong> Click and drag anywhere in space to pan your view around the current target.</p>
+            <p><strong>Orbit:</strong> The camera automatically orbits the target body to provide a dynamic view.</p>
             <p><strong>Zoom:</strong> Use the scroll wheel to adjust your distance from the celestial body.</p>
           </div>
 
           <div class="project-item">
             <h3>Shortcuts & Return</h3>
             <p><strong>Quick Nav:</strong> Use the top navigation bar to jump directly between primary planets.</p>
-            <p><strong>Return:</strong> Use the "Return to Orbit" buttons within HUDs to close the interface while maintaining your position.</p>
+            <p><strong>Return:</strong> Use the "Return to Home" button below to jump back to the Sun at any time.</p>
           </div>
         </div>
         <button class="hud-back" data-target="Sun">Return to Home</button>
       </section>
 
-      <section id="section-Moon" class="hud-section content-section" data-label="About">
+      <section id="section-Earth" class="planet-label content-section" data-label="CONTACT">
+        <h2>Contact</h2>
+      </section>
+
+      <section id="section-Jupiter" class="planet-label content-section" data-label="PROJECTS">
+        <h2>Projects</h2>
+      </section>
+
+      <section id="section-Saturn" class="planet-label content-section" data-label="PROFILE">
+        <h2>Profile</h2>
+      </section>
+
+      <section id="section-Moon" class="hud-section content-section" data-label="ABOUT">
         <div class="hud-header">Profile / Interface 01</div>
         <div class="hud-content">
           <h2>About</h2>
@@ -143,7 +138,7 @@
         <div class="hud-content">
           <h2>gaussian-blur</h2>
           <div class="project-item">
-            <p>Educational implementation of Gaussian blur algorithms from scratch in Python. Demonstrates a deep understanding of image processing and kernel-based mathematics.</p>
+            <p>Implementation of Gaussian blur algorithms from scratch in Python. Focuses on the mathematical fundamentals of image processing and kernel-based operations.</p>
             <div class="contact-grid" style="margin-top: 1rem;">
               <a href="https://github.com/mackrus/GAUSSIAN_BLUR" target="_blank">View Repository</a>
             </div>

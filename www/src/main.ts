@@ -88,22 +88,6 @@ async function main() {
     // Add "Sun" as a planet-like entity to WASM so it can have satellites
     solarSystem.add_planet("Sun", 0, 1, 0, 0.01, 0, 0xFFD700);
 
-    // Create Station-01 (Sun's satellite)
-    const stationName = "Station-01";
-    solarSystem.add_satellite("Sun", stationName, 8, 0.4, 0.0, 0.05, 0.0, 0xffffff);
-    const stationGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5); 
-    const stationMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0xffffff,
-        emissive: 0xffffff,
-        emissiveIntensity: 0.8
-    });
-    const stationMesh = new THREE.Mesh(stationGeometry, stationMaterial);
-    stationMesh.name = stationName;
-    stationMesh.userData.originalEmissive = new THREE.Color(0xffffff);
-    stationMesh.userData.originalIntensity = 0.8;
-    sunGroup.add(stationMesh); 
-    satelliteMeshes[stationName] = stationMesh;
-
     const planetsData = [
         { name: "Mercury", size: 0.383, orbitRadius: 10, orbitSpeed: 0.54, color: 0x8C7E6C, satellites: [] },
         { name: "Venus", size: 0.949, orbitRadius: 15, orbitSpeed: 0.65, color: 0xDFC299, satellites: [] },
@@ -143,7 +127,6 @@ async function main() {
         const section = document.getElementById(`section-${name}`);
         
         // ONLY create a label if there is an actual HTML section for this body
-        // This allows bodies like Mars to be clickable without having a floating label
         if (!section) return;
         
         // Get content type: data-label attribute or the first h2/h1 text
@@ -160,8 +143,6 @@ async function main() {
         worldLabelContainer.appendChild(div);
         worldLabels[name] = div;
     }
-
-    createWorldLabel("Station-01");
 
     planetsData.forEach(p => {
         solarSystem.add_planet(p.name, p.orbitRadius, p.orbitSpeed, 0.01, 0.02, 0.005, p.color);
@@ -292,10 +273,10 @@ async function main() {
     let targetLookAt = new THREE.Vector3(0, 0, 0);
 
     // Gravitational Pulse Logic
-    let activePulse = { active: false, radius: 0, maxRadius: 150, speed: 1.5 };
+    let activePulse = { active: false, radius: 0, maxRadius: 150, speed: 0.8 };
     const pulseGeometry = new THREE.SphereGeometry(1, 64, 64);
     const pulseMaterial = new THREE.MeshBasicMaterial({ 
-        color: 0xFFD700, 
+        color: 0xADD8E6, 
         transparent: true, 
         opacity: 0, 
         side: THREE.BackSide 
@@ -377,8 +358,6 @@ async function main() {
                             break;
                         }
                     }
-                    if (foundName === "Station-01") parentPlanet = "Sun";
-
                     if (parentPlanet) {
                         setTarget(parentPlanet);
                     } else if (foundName !== "Sun") {
@@ -432,8 +411,8 @@ async function main() {
             }
             if (newHover) {
                 const mat = newHover.material as THREE.MeshPhysicalMaterial;
-                mat.emissive.set(0xaaaaaa); 
-                mat.emissiveIntensity = 1.0; 
+                mat.emissive.set(0x333333); 
+                mat.emissiveIntensity = 0.6; 
             }
             hoveredObject = newHover;
         }
@@ -513,11 +492,14 @@ async function main() {
                     // If pulse is passing this planet
                     if (Math.abs(dist - activePulse.radius) < 2) {
                         const mat = sphere.material as THREE.MeshPhysicalMaterial;
-                        mat.emissiveIntensity = 2.0; // Flash!
+                        mat.emissive.set(0xADD8E6); // Light blue flash
+                        mat.emissiveIntensity = 2.0; 
                     } else {
                         const mat = sphere.material as THREE.MeshPhysicalMaterial;
-                        // Smoothly return to original intensity
+                        // Smoothly return to original color and intensity
+                        const targetColor = sphere.userData.originalEmissive || new THREE.Color(0x000000);
                         const targetIntensity = sphere.userData.originalIntensity || 0.4;
+                        mat.emissive.lerp(targetColor, 0.1);
                         mat.emissiveIntensity += (targetIntensity - mat.emissiveIntensity) * 0.1;
                     }
                 }
@@ -536,10 +518,14 @@ async function main() {
                             sMesh.getWorldPosition(worldPos);
                             const dist = worldPos.length();
                             if (Math.abs(dist - activePulse.radius) < 2) {
-                                (sMesh.material as THREE.MeshPhysicalMaterial).emissiveIntensity = 2.0;
+                                const mat = sMesh.material as THREE.MeshPhysicalMaterial;
+                                mat.emissive.set(0xADD8E6); // Light blue flash
+                                mat.emissiveIntensity = 2.0;
                             } else {
                                 const mat = sMesh.material as THREE.MeshPhysicalMaterial;
+                                const targetColor = sMesh.userData.originalEmissive || new THREE.Color(0x000000);
                                 const targetIntensity = sMesh.userData.originalIntensity || 0.2;
+                                mat.emissive.lerp(targetColor, 0.1);
                                 mat.emissiveIntensity += (targetIntensity - mat.emissiveIntensity) * 0.1;
                             }
                         }
@@ -573,14 +559,27 @@ async function main() {
                 if (parentPlanet && parentPlanet.satellites.find(s => s.name === name)) {
                     shouldBeVisible = true;
                 }
-                // Special case: Sun's satellite
-                if (currentTargetName === "Sun" && name === "Station-01") {
+
+                // Special case: Always show Help (Mercury)
+                if (name === "Mercury") {
                     shouldBeVisible = true;
                 }
 
-                // 2. Show big bodies or other items only on hover (if not current target)
-                if (hoveredObject && hoveredObject.name === name && currentTargetName !== name) {
+                // 2. Show interactive planets only on hover (if not current target)
+                const interactivePlanets = ["Earth", "Jupiter", "Saturn"];
+                if (interactivePlanets.includes(name) && hoveredObject && hoveredObject.name === name && currentTargetName !== name) {
                     shouldBeVisible = true;
+                }
+
+                // 3. Pulse hit detection for labels (excluding non-interactive planets)
+                if (activePulse.active && name !== "Sun" && (interactivePlanets.includes(name) || name === "Mercury")) {
+                    const worldPos = new THREE.Vector3();
+                    mesh.getWorldPosition(worldPos);
+                    const dist = worldPos.length();
+                    // Very wide window (25 units) to keep labels visible for a long time
+                    if (Math.abs(dist - activePulse.radius) < 25) {
+                        shouldBeVisible = true;
+                    }
                 }
 
                 if (shouldBeVisible && frustum.containsPoint(worldPos)) {
@@ -608,10 +607,30 @@ async function main() {
                     label.style.left = `${x}px`;
                     label.style.top = `${y}px`;
                     
-                    // Hide labels if HUD is active, UNLESS it's the currently hovered item
+                    // Logic for label opacity:
+                    // If hit by pulse, max opacity. 
+                    // Otherwise, respect HUD active and isHovered.
+                    let opacity = "1";
                     const hudActive = !!document.querySelector(".hud-section.active");
                     const isHovered = hoveredObject && hoveredObject.name === name;
-                    label.style.opacity = (hudActive && !isHovered) ? "0" : "1";
+
+                    const interactivePlanets = ["Earth", "Jupiter", "Saturn"];
+                    // If it's a pulse hit, we want it to fade in/out slightly based on pulse proximity
+                    if (activePulse.active && name !== "Sun" && name !== "Mercury" && interactivePlanets.includes(name)) {
+                        const mPos = new THREE.Vector3();
+                        mesh.getWorldPosition(mPos);
+                        const d = mPos.length();
+                        const proximity = Math.abs(d - activePulse.radius);
+                        if (proximity < 25) {
+                            opacity = (1 - (proximity / 25)).toString();
+                        }
+                    } else if (name === "Mercury") {
+                        opacity = "1";
+                    } else {
+                        opacity = (hudActive && !isHovered) ? "0" : "1";
+                    }
+                    
+                    label.style.opacity = opacity;
                 } else {
                     label.style.display = "none";
                 }
