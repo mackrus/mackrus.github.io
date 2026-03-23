@@ -291,39 +291,22 @@ async function main() {
     let targetCameraPosition = new THREE.Vector3(0, 15, 30);
     let targetLookAt = new THREE.Vector3(0, 0, 0);
 
-    let spectralMode = false;
-    function toggleSpectralMode() {
-        spectralMode = !spectralMode;
-        
-        const applySpectral = (obj: THREE.Object3D) => {
-            if (obj instanceof THREE.Mesh) {
-                const mat = obj.material as THREE.MeshPhysicalMaterial;
-                if (spectralMode) {
-                    mat.wireframe = true;
-                    if (obj.name === "Sun") {
-                        mat.emissiveIntensity = 0.5;
-                    }
-                } else {
-                    mat.wireframe = false;
-                    if (obj.name === "Sun") {
-                        mat.emissiveIntensity = 1.5;
-                    }
-                }
-            }
-            obj.children.forEach(applySpectral);
-        };
+    // Gravitational Pulse Logic
+    let activePulse = { active: false, radius: 0, maxRadius: 150, speed: 1.5 };
+    const pulseGeometry = new THREE.SphereGeometry(1, 64, 64);
+    const pulseMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0xFFD700, 
+        transparent: true, 
+        opacity: 0, 
+        side: THREE.BackSide 
+    });
+    const pulseMesh = new THREE.Mesh(pulseGeometry, pulseMaterial);
+    scene.add(pulseMesh);
 
-        scene.children.forEach(applySpectral);
-        
-        // Update UI hint if needed
-        const sunSection = document.getElementById("section-Sun");
-        if (sunSection) {
-            if (spectralMode) {
-                sunSection.innerHTML = `<h1>Markus Bajlo</h1><p class="hint spectral-active">[ SPECTRAL ANALYSIS ACTIVE ]</p>`;
-            } else {
-                sunSection.innerHTML = `<h1>Markus Bajlo</h1>`;
-            }
-        }
+    function triggerGravitationalPulse() {
+        activePulse.active = true;
+        activePulse.radius = 5; // Start at Sun surface
+        pulseMesh.visible = true;
     }
 
     let zoomFactor = 1.0;
@@ -347,12 +330,7 @@ async function main() {
         }
     }
 
-    function resetSpectralMode() {
-        if (spectralMode) toggleSpectralMode();
-    }
-
     function setTarget(name: string) {
-        if (name !== "Sun") resetSpectralMode(); // Reset if moving away from Sun
         currentTargetName = name;
         zoomFactor = 1.0; // Reset zoom on target change
         updateActiveSection(name);
@@ -388,7 +366,7 @@ async function main() {
             if (foundName) {
                 if (currentTargetName === foundName) {
                     if (foundName === "Sun") {
-                        toggleSpectralMode();
+                        triggerGravitationalPulse();
                     }
 
                     // If already at a satellite, go to its planet
@@ -503,6 +481,21 @@ async function main() {
         solarSystem.update(delta);
         sun.rotation.y = solarSystem.get_sun_rotation_y();
 
+        // Update Pulse
+        if (activePulse.active) {
+            activePulse.radius += activePulse.speed * delta;
+            pulseMesh.scale.set(activePulse.radius, activePulse.radius, activePulse.radius);
+            
+            // Fade out as it expands
+            const progress = activePulse.radius / activePulse.maxRadius;
+            pulseMaterial.opacity = Math.max(0, 0.4 * (1 - progress));
+
+            if (activePulse.radius > activePulse.maxRadius) {
+                activePulse.active = false;
+                pulseMesh.visible = false;
+            }
+        }
+
         const planets = solarSystem.get_planets() as any[];
         planets.forEach(p => {
             const group = p.name === "Sun" ? sunGroup : planetMeshes[p.name];
@@ -514,6 +507,21 @@ async function main() {
                 sphere.rotation.y += p.rotation_speeds.y * delta;
                 sphere.rotation.z += p.rotation_speeds.z * delta;
 
+                // Hit detection for Pulse
+                if (activePulse.active && p.name !== "Sun") {
+                    const dist = group.position.length();
+                    // If pulse is passing this planet
+                    if (Math.abs(dist - activePulse.radius) < 2) {
+                        const mat = sphere.material as THREE.MeshPhysicalMaterial;
+                        mat.emissiveIntensity = 2.0; // Flash!
+                    } else {
+                        const mat = sphere.material as THREE.MeshPhysicalMaterial;
+                        // Smoothly return to original intensity
+                        const targetIntensity = sphere.userData.originalIntensity || 0.4;
+                        mat.emissiveIntensity += (targetIntensity - mat.emissiveIntensity) * 0.1;
+                    }
+                }
+
                 p.satellites.forEach((s: any) => {
                     const sMesh = satelliteMeshes[s.name];
                     if (sMesh) {
@@ -521,6 +529,20 @@ async function main() {
                         sMesh.rotation.x += s.rotation_speeds.x * delta;
                         sMesh.rotation.y += s.rotation_speeds.y * delta;
                         sMesh.rotation.z += s.rotation_speeds.z * delta;
+
+                        // Hit detection for satellites
+                        if (activePulse.active) {
+                            const worldPos = new THREE.Vector3();
+                            sMesh.getWorldPosition(worldPos);
+                            const dist = worldPos.length();
+                            if (Math.abs(dist - activePulse.radius) < 2) {
+                                (sMesh.material as THREE.MeshPhysicalMaterial).emissiveIntensity = 2.0;
+                            } else {
+                                const mat = sMesh.material as THREE.MeshPhysicalMaterial;
+                                const targetIntensity = sMesh.userData.originalIntensity || 0.2;
+                                mat.emissiveIntensity += (targetIntensity - mat.emissiveIntensity) * 0.1;
+                            }
+                        }
                     }
                 });
             }
