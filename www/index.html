@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markus Bajlo - Portfolio</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <canvas id="bg"></canvas>
+    <div id="world-labels"></div>
+    
+    <nav id="ui-nav">
+      <button data-target="Sun">Home</button>
+      <button data-target="Earth">Profile</button>
+      <button data-target="Jupiter">Projects</button>
+      <button data-target="Saturn">Contact</button>
+      <button data-target="Station-01" class="nav-highlight">System Guide</button>
+    </nav>
+
+    <main id="app-content">
+      <!-- SUN / HOME -->
+      <section id="section-Sun" class="planet-label content-section active">
+        <h1>Markus Bajlo</h1>
+      </section>
+
+      <!-- PLANET OVERVIEWS -->
+      <section id="section-Earth" class="planet-label content-section">
+        <h2>Profile</h2>
+      </section>
+
+      <section id="section-Mars" class="planet-label content-section">
+        <h2>Mars</h2>
+      </section>
+
+      <section id="section-Jupiter" class="planet-label content-section">
+        <h2>Projects</h2>
+      </section>
+
+      <section id="section-Saturn" class="planet-label content-section">
+        <h2>Contact</h2>
+      </section>
+
+
+      <!-- SATELLITE HUDs -->
+      <section id="section-Station-01" class="hud-section content-section" data-label="SYSTEM GUIDE">
+        <div class="hud-header">Core / Protocol 00</div>
+        <div class="hud-content">
+          <h2>System Navigation</h2>
+          <div class="project-item">
+            <h3>Orbital Travel</h3>
+            <p>Select any primary celestial body (Planets) to initiate travel and enter local orbit.</p>
+          </div>
+          <div class="project-item">
+            <h3>Data Access</h3>
+            <p>Select secondary bodies (Satellites) while in orbit to access detailed project archives and live interfaces.</p>
+          </div>
+          <div class="project-item">
+            <h3>Perspective</h3>
+            <p>Click and drag to adjust your view. Use the scroll wheel to zoom in on celestial structures.</p>
+          </div>
+        </div>
+        <button class="hud-back" data-target="Sun">Return to Home</button>
+      </section>
+
+      <section id="section-Moon" class="hud-section content-section" data-label="About">
+        <div class="hud-header">Profile / Interface 01</div>
+        <div class="hud-content">
+          <h2>About</h2>
+          <p>
+            Physics Engineering student with a deep interest in the intersection of physical phenomena and computational systems. 
+            Focused on exploring machine learning, optimization problems, and high-performance visualization.
+          </p>
+          <p style="margin-top: 1rem; opacity: 0.8; font-size: 0.9rem;">
+            I also have a strong preference for <strong>Typst</strong> for all my technical documentation and typesetting needs.
+          </p>
+          <ul class="skills-list">
+            <li>Physics</li>
+            <li>Machine Learning</li>
+            <li>Optimization</li>
+            <li>Rust / WASM</li>
+            <li>Typst</li>
+          </ul>
+        </div>
+        <button class="hud-back" data-target="Earth">Return to Orbit</button>
+      </section>
+
+      <!-- JUPITER PROJECT ARCHIVES -->
+      <section id="section-Overtime-Reporter" class="hud-section content-section" data-label="overtime-reporter">
+        <div class="hud-header">Registry / Tool 01</div>
+        <div class="hud-content">
+          <h2>overtime-reporter</h2>
+          <div class="project-item">
+            <p>High-performance overtime reporting tool built with Rust (WASM) and React. Features automated PDF/CSV export using Typst for professional document generation.</p>
+            <div class="contact-grid" style="margin-top: 1rem;">
+              <a href="https://mackrus.github.io/overtime-reporter/" target="_blank">Launch App</a>
+              <a href="https://github.com/mackrus/OVERTIME-REPORTER" target="_blank">View Source</a>
+            </div>
+          </div>
+        </div>
+        <button class="hud-back" data-target="Jupiter">Return to Orbit</button>
+      </section>
+
+      <section id="section-Coltrane-Circle" class="hud-section content-section" data-label="coltrane-circle">
+        <div class="hud-header">Registry / Visualizer 02</div>
+        <div class="hud-content">
+          <h2>coltrane-circle</h2>
+          <div class="project-item">
+            <p>Interactive web-based visualizer exploring the geometric properties of John Coltrane's musical structures. A blend of music theory and computational art.</p>
+            <div class="contact-grid" style="margin-top: 1rem;">
+              <a href="https://mackrus.github.io/coltrane-circle/" target="_blank">Launch Visualizer</a>
+              <a href="https://github.com/mackrus/COLTRANE-CIRCLE" target="_blank">View Source</a>
+            </div>
+          </div>
+        </div>
+        <button class="hud-back" data-target="Jupiter">Return to Orbit</button>
+      </section>
+
+      <section id="section-SketchyTop" class="hud-section content-section" data-label="sketchytop">
+        <div class="hud-header">Registry / System 03</div>
+        <div class="hud-content">
+          <h2>sketchytop</h2>
+          <div class="project-item">
+            <p>Lightweight system monitoring plugin for SketchyBar, written in Rust. Provides real-time performance statistics with minimal resource overhead.</p>
+            <div class="contact-grid" style="margin-top: 1rem;">
+              <a href="https://github.com/mackrus/SKETCHYTOP" target="_blank">View Repository</a>
+            </div>
+          </div>
+        </div>
+        <button class="hud-back" data-target="Jupiter">Return to Orbit</button>
+      </section>
+
+      <section id="section-Gaussian-Blur" class="hud-section content-section" data-label="gaussian-blur">
+        <div class="hud-header">Registry / Algorithm 04</div>
+        <div class="hud-content">
+          <h2>gaussian-blur</h2>
+          <div class="project-item">
+            <p>Educational implementation of Gaussian blur algorithms from scratch in Python. Demonstrates a deep understanding of image processing and kernel-based mathematics.</p>
+            <div class="contact-grid" style="margin-top: 1rem;">
+              <a href="https://github.com/mackrus/GAUSSIAN_BLUR" target="_blank">View Repository</a>
+            </div>
+          </div>
+        </div>
+        <button class="hud-back" data-target="Jupiter">Return to Orbit</button>
+      </section>
+
+      <section id="section-Titan" class="hud-section content-section" data-label="Details">
+        <div class="hud-header">Transmission / Interface 03</div>
+        <div class="hud-content">
+          <h2>Contact</h2>
+          <p>Active communication channels:</p>
+          <div class="contact-grid">
+            <a href="mailto:markus@example.com">Email</a>
+            <a href="https://github.com/mackrus">GitHub</a>
+            <a href="#">LinkedIn</a>
+          </div>
+        </div>
+        <button class="hud-back" data-target="Saturn">Return to Orbit</button>
+      </section>
+      
+      <footer>
+        <p>© 2026 Markus Bajlo</p>
+      </footer>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
