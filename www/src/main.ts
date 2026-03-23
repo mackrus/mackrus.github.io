@@ -411,14 +411,9 @@ async function main() {
         updateActiveSection(name);
     }
 
-    window.addEventListener("click", (event) => {
-        // Only ignore if clicking on active HUD sections, not planet labels
-        const target = event.target as HTMLElement;
-        if (target.closest(".hud-section")) return;
-        if (target.closest("#ui-nav")) return;
-
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    function handleSelect(clientX: number, clientY: number) {
+        mouse.x = (clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(clientY / window.innerHeight) * 2 + 1;
 
         raycaster.setFromCamera(mouse, camera);
         const intersects = raycaster.intersectObjects(scene.children, true);
@@ -464,6 +459,50 @@ async function main() {
                 break;
             }
         }
+    }
+
+    window.addEventListener("click", (event) => {
+        // Only ignore if clicking on active HUD sections, not planet labels
+        const target = event.target as HTMLElement;
+        if (target.closest(".hud-section")) return;
+        if (target.closest("#ui-nav")) return;
+
+        handleSelect(event.clientX, event.clientY);
+    });
+
+    let touchDist = 0;
+    window.addEventListener("touchstart", (event) => {
+        const target = event.target as HTMLElement;
+        if (target.closest(".hud-section")) return;
+        if (target.closest("#ui-nav")) return;
+
+        if (event.touches.length === 1) {
+            handleSelect(event.touches[0].clientX, event.touches[0].clientY);
+        } else if (event.touches.length === 2) {
+            touchDist = Math.hypot(
+                event.touches[0].clientX - event.touches[1].clientX,
+                event.touches[0].clientY - event.touches[1].clientY
+            );
+        }
+    });
+
+    window.addEventListener("touchmove", (event) => {
+        if (event.touches.length === 2) {
+            const d = Math.hypot(
+                event.touches[0].clientX - event.touches[1].clientX,
+                event.touches[0].clientY - event.touches[1].clientY
+            );
+            if (touchDist > 0) {
+                const diff = touchDist - d;
+                zoomFactor += diff * 0.005;
+                zoomFactor = Math.min(Math.max(zoomFactor, minZoom), maxZoom);
+            }
+            touchDist = d;
+        }
+    });
+
+    window.addEventListener("touchend", () => {
+        touchDist = 0;
     });
 
     let hoveredObject: THREE.Mesh | null = null;
