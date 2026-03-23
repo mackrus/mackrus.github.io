@@ -14,9 +14,10 @@
     
     <nav id="ui-nav">
       <button data-target="Sun">Home</button>
-      <button data-target="Saturn">Profile</button>
+      <button data-target="Earth">Profile</button>
       <button data-target="Jupiter">Projects</button>
-      <button data-target="Earth">Contact</button>
+      <button data-target="Mars">Settings</button>
+      <button data-target="Saturn">Contact</button>
       <button data-target="Mercury" class="nav-highlight">Help</button>
     </nav>
 
@@ -24,6 +25,9 @@
       <!-- SUN / HOME -->
       <section id="section-Sun" class="planet-label content-section active">
         <h1>Markus Bajlo</h1>
+      </section>
+
+      <section id="section-Sun-Hint" class="planet-label content-section active" style="background: none; border: none; box-shadow: none; backdrop-filter: none;">
         <p class="sun-subtitle">Click on the Sun to reveal destinations</p>
       </section>
 
@@ -54,36 +58,58 @@
         <button class="hud-back" data-target="Sun">Return to Home</button>
       </section>
 
-      <section id="section-Earth" class="planet-label content-section" data-label="CONTACT">
-        <h2>Contact</h2>
+      <section id="section-Earth" class="planet-label content-section" data-label="PROFILE">
+        <h2>Profile</h2>
       </section>
 
       <section id="section-Jupiter" class="planet-label content-section" data-label="PROJECTS">
         <h2>Projects</h2>
       </section>
 
-      <section id="section-Saturn" class="planet-label content-section" data-label="PROFILE">
-        <h2>Profile</h2>
+      <section id="section-Saturn" class="planet-label content-section" data-label="CONTACT">
+        <h2>Contact</h2>
       </section>
 
-      <section id="section-Moon" class="hud-section content-section" data-label="ABOUT">
+      <!-- SETTINGS HUD -->
+      <section id="section-Mars" class="hud-section content-section" data-label="SETTINGS">
+        <div class="hud-header">System / Admin 01</div>
+        <div class="hud-content">
+          <h2>Simulation Settings</h2>
+          
+          <div class="project-item">
+            <h3>Time Warp</h3>
+            <p>Adjust the speed of the planetary orbits.</p>
+            <input type="range" id="speed-slider" min="0" max="5" step="0.1" value="1.0" style="width: 100%; margin-top: 1rem;">
+          </div>
+
+          <div class="project-item">
+            <h3>Scale Adjustment</h3>
+            <p>Scale the size of the celestial bodies.</p>
+            <input type="range" id="size-slider" min="0.5" max="3" step="0.1" value="1.0" style="width: 100%; margin-top: 1rem;">
+          </div>
+
+          <div class="project-item" style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+            <div>
+              <h3>Minimal Mode</h3>
+              <p style="margin: 0; font-size: 0.8rem;">Wireframe aesthetics / No stars.</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="minimal-mode">
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+        <button class="hud-back" data-target="Sun">Return to Home</button>
+      </section>
+
+      <section id="section-Moon" class="hud-section content-section" data-label="ABOUT ME">
         <div class="hud-header">Profile / Interface 01</div>
         <div class="hud-content">
-          <h2>About</h2>
+          <h2>About Me</h2>
           <p>
-            Physics Engineering student with a deep interest in the intersection of physical phenomena and computational systems. 
-            Focused on exploring machine learning, optimization problems, and high-performance visualization.
+            Physics Engineering student interested in computational systems and optimization. 
+            I also enjoy cooking and experimenting with new recipes.
           </p>
-          <p style="margin-top: 1rem; opacity: 0.8; font-size: 0.9rem;">
-            I also have a strong preference for <strong>Typst</strong> for all my technical documentation and typesetting needs.
-          </p>
-          <ul class="skills-list">
-            <li>Physics</li>
-            <li>Machine Learning</li>
-            <li>Optimization</li>
-            <li>Rust / WASM</li>
-            <li>Typst</li>
-          </ul>
         </div>
         <button class="hud-back" data-target="Earth">Return to Orbit</button>
       </section>

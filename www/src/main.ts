@@ -9,9 +9,11 @@ async function main() {
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
     const renderer = new THREE.WebGLRenderer({ 
         canvas: document.querySelector("#bg") as HTMLCanvasElement,
-        antialias: true
+        antialias: true,
+        alpha: true
     });
 
+    renderer.setClearColor(0x000000, 0);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     
@@ -71,6 +73,91 @@ async function main() {
     sun.userData.originalEmissive = new THREE.Color(0xFF8C00);
     sun.userData.originalIntensity = 1.5;
     sunGroup.add(sun);
+
+    // Create a simple circle texture for minimal mode
+    function createCircleTexture(solid: boolean = false) {
+        const canvas = document.createElement("canvas");
+        canvas.width = 256; // Increased resolution for sharpness
+        canvas.height = 256;
+        const ctx = canvas.getContext("2d")!;
+        
+        if (solid) {
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.arc(128, 128, 120, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 12;
+            ctx.beginPath();
+            ctx.arc(128, 128, 118, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.needsUpdate = true;
+        return tex;
+    }
+    const circleTexture = createCircleTexture(false);
+    const solidCircleTexture = createCircleTexture(true);
+    
+    const spriteMaterial = new THREE.SpriteMaterial({ 
+        map: circleTexture, 
+        color: 0xffffff, 
+        transparent: true,
+        depthWrite: false
+    });
+    const solidSpriteMaterial = new THREE.SpriteMaterial({ 
+        map: solidCircleTexture, 
+        color: 0xffffff, 
+        transparent: true,
+        depthWrite: false
+    });
+
+    function createMinimalSprite(size: number, solid: boolean = false) {
+        const sprite = new THREE.Sprite(solid ? solidSpriteMaterial : spriteMaterial);
+        sprite.scale.set(size * 2.2, size * 2.2, 1);
+        sprite.visible = false;
+        sprite.name = "minimalSprite";
+        return sprite;
+    }
+
+    const sunSprite = createMinimalSprite(5, true); // Sun gets a solid circle
+    sunGroup.add(sunSprite);
+
+    // Create a ring texture for minimal mode
+    function createRingTexture() {
+        const canvas = document.createElement("canvas");
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext("2d")!;
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 12;
+        ctx.beginPath();
+        ctx.arc(256, 256, 240, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(256, 256, 180, 0, Math.PI * 2);
+        ctx.stroke();
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.needsUpdate = true;
+        return tex;
+    }
+    const ringTexture = createRingTexture();
+    const ringSpriteMaterial = new THREE.SpriteMaterial({ 
+        map: ringTexture, 
+        color: 0xffffff, 
+        transparent: true,
+        depthWrite: false
+    });
+
+    function createMinimalRing(size: number) {
+        const sprite = new THREE.Sprite(ringSpriteMaterial);
+        sprite.scale.set(size * 3.5, size * 3.5, 1);
+        sprite.visible = false;
+        sprite.name = "minimalRing";
+        return sprite;
+    }
 
     // Add a soft corona glow
     const coronaGeometry = new THREE.SphereGeometry(5.3, 64, 64);
@@ -185,6 +272,9 @@ async function main() {
         const atmos = new THREE.Mesh(atmosGeometry, atmosMaterial);
         group.add(atmos);
 
+        const planetSprite = createMinimalSprite(p.size, true);
+        group.add(planetSprite);
+
         p.satellites.forEach(s => {
             solarSystem.add_satellite(p.name, s.name, s.orbitRadius, s.orbitSpeed, 0.0, 0.03, 0.0, s.color);
             createWorldLabel(s.name);
@@ -203,6 +293,10 @@ async function main() {
             sMesh.userData.originalIntensity = 0.2;
             group.add(sMesh);
             satelliteMeshes[s.name] = sMesh;
+
+            const sSprite = createMinimalSprite(s.size, true);
+            group.add(sSprite);
+            sMesh.userData.minimalSprite = sSprite;
         });
 
         if (p.name === "Saturn") {
@@ -287,7 +381,7 @@ async function main() {
     function triggerGravitationalPulse() {
         activePulse.active = true;
         activePulse.radius = 5; // Start at Sun surface
-        pulseMesh.visible = true;
+        pulseMesh.visible = !isMinimalMode;
     }
 
     let zoomFactor = 1.0;
@@ -373,6 +467,70 @@ async function main() {
     });
 
     let hoveredObject: THREE.Mesh | null = null;
+    let simulationSpeed = 1.0;
+    let globalScale = 1.0;
+    let isMinimalMode = false;
+
+    const speedSlider = document.getElementById("speed-slider") as HTMLInputElement;
+    if (speedSlider) {
+        speedSlider.addEventListener("input", (e) => {
+            simulationSpeed = parseFloat((e.target as HTMLInputElement).value);
+        });
+    }
+
+    const sizeSlider = document.getElementById("size-slider") as HTMLInputElement;
+    if (sizeSlider) {
+        sizeSlider.addEventListener("input", (e) => {
+            globalScale = parseFloat((e.target as HTMLInputElement).value);
+        });
+    }
+
+    const minimalToggle = document.getElementById("minimal-mode") as HTMLInputElement;
+    if (minimalToggle) {
+        minimalToggle.addEventListener("change", (e) => {
+            isMinimalMode = (e.target as HTMLInputElement).checked;
+            
+            // Toggle stars
+            starPoints.visible = !isMinimalMode;
+            
+            // Update Sun
+            sun.visible = !isMinimalMode;
+            sunSprite.visible = isMinimalMode;
+            corona.visible = !isMinimalMode;
+
+            // Update all planets
+            Object.keys(planetSpheres).forEach(name => {
+                const sphere = planetSpheres[name];
+                const group = planetMeshes[name];
+                
+                sphere.visible = !isMinimalMode;
+                
+                // Toggle sprites and rings
+                group.children.forEach(child => {
+                    if (child instanceof THREE.Sprite && child.name === "minimalSprite") {
+                        child.visible = isMinimalMode;
+                    }
+                    // Hide atmospheres but KEEP Saturn's regular rings
+                    if (child instanceof THREE.Mesh && child !== sphere && child.name !== "Sun") {
+                        const isSaturnRing = name === "Saturn" && child.geometry instanceof THREE.RingGeometry;
+                        if (!isSaturnRing) {
+                            child.visible = !isMinimalMode;
+                        } else {
+                            child.visible = true; // Always show Saturn's rings
+                        }
+                    }
+                });
+            });
+
+            // Update all satellites
+            Object.keys(satelliteMeshes).forEach(name => {
+                const sMesh = satelliteMeshes[name];
+                sMesh.visible = !isMinimalMode;
+                // Satellite sprite visibility is handled in animate loop
+            });
+        });
+    }
+
     window.addEventListener("mousemove", (event) => {
         const target = event.target as HTMLElement;
         const isOverUI = target.closest(".hud-section") || target.closest("#ui-nav");
@@ -454,11 +612,12 @@ async function main() {
         
         currentTimeScale += (targetTimeScale - currentTimeScale) * 0.05;
 
-        const delta = ((now - lastTime) / 16.67) * currentTimeScale; 
+        const delta = ((now - lastTime) / 16.67) * currentTimeScale * simulationSpeed; 
         lastTime = now;
 
         solarSystem.update(delta);
         sun.rotation.y = solarSystem.get_sun_rotation_y();
+        sunGroup.scale.set(globalScale, globalScale, globalScale);
 
         // Update Pulse
         if (activePulse.active) {
@@ -482,12 +641,13 @@ async function main() {
             
             if (group && sphere) {
                 group.position.set(p.x, 0, p.z);
+                group.scale.set(globalScale, globalScale, globalScale);
                 sphere.rotation.x += p.rotation_speeds.x * delta;
                 sphere.rotation.y += p.rotation_speeds.y * delta;
                 sphere.rotation.z += p.rotation_speeds.z * delta;
 
                 // Hit detection for Pulse
-                if (activePulse.active && p.name !== "Sun") {
+                if (activePulse.active && p.name !== "Sun" && !isMinimalMode) {
                     const dist = group.position.length();
                     // If pulse is passing this planet
                     if (Math.abs(dist - activePulse.radius) < 2) {
@@ -512,8 +672,15 @@ async function main() {
                         sMesh.rotation.y += s.rotation_speeds.y * delta;
                         sMesh.rotation.z += s.rotation_speeds.z * delta;
 
+                        // Minimal mode sprite
+                        const sSprite = sMesh.userData.minimalSprite as THREE.Sprite;
+                        if (sSprite) {
+                            sSprite.position.set(s.x, 0, s.z);
+                            sSprite.visible = isMinimalMode;
+                        }
+
                         // Hit detection for satellites
-                        if (activePulse.active) {
+                        if (activePulse.active && !isMinimalMode) {
                             const worldPos = new THREE.Vector3();
                             sMesh.getWorldPosition(worldPos);
                             const dist = worldPos.length();
@@ -566,7 +733,7 @@ async function main() {
                 }
 
                 // 2. Show interactive planets only on hover (if not current target)
-                const interactivePlanets = ["Earth", "Jupiter", "Saturn"];
+                const interactivePlanets = ["Earth", "Jupiter", "Saturn", "Mars"];
                 if (interactivePlanets.includes(name) && hoveredObject && hoveredObject.name === name && currentTargetName !== name) {
                     shouldBeVisible = true;
                 }
@@ -584,16 +751,16 @@ async function main() {
 
                 if (shouldBeVisible && frustum.containsPoint(worldPos)) {
                     // Offset label above the body
-                    let offset = 1;
-                    if (name === "Sun") offset = 6;
+                    let offset = 2;
+                    if (name === "Sun") offset = 8;
                     else {
                         const pData = planetsData.find(pd => pd.name === name);
-                        if (pData) offset = pData.size + 0.5;
+                        if (pData) offset = pData.size + 1.5;
                         else {
                             // Check satellites
                             for (const p of planetsData) {
                                 const sData = p.satellites.find(s => s.name === name);
-                                if (sData) offset = sData.size + 0.3;
+                                if (sData) offset = sData.size + 0.8;
                             }
                         }
                     }
@@ -614,7 +781,7 @@ async function main() {
                     const hudActive = !!document.querySelector(".hud-section.active");
                     const isHovered = hoveredObject && hoveredObject.name === name;
 
-                    const interactivePlanets = ["Earth", "Jupiter", "Saturn"];
+                    const interactivePlanets = ["Earth", "Jupiter", "Saturn", "Mars"];
                     // If it's a pulse hit, we want it to fade in/out slightly based on pulse proximity
                     if (activePulse.active && name !== "Sun" && name !== "Mercury" && interactivePlanets.includes(name)) {
                         const mPos = new THREE.Vector3();
