@@ -751,16 +751,16 @@ async function main() {
 
                 if (shouldBeVisible && frustum.containsPoint(worldPos)) {
                     // Offset label above the body
-                    let offset = 2;
-                    if (name === "Sun") offset = 8;
+                    let offset = 1;
+                    if (name === "Sun") offset = 6;
                     else {
                         const pData = planetsData.find(pd => pd.name === name);
-                        if (pData) offset = pData.size + 1.5;
+                        if (pData) offset = pData.size + 0.5;
                         else {
                             // Check satellites
                             for (const p of planetsData) {
                                 const sData = p.satellites.find(s => s.name === name);
-                                if (sData) offset = sData.size + 0.8;
+                                if (sData) offset = sData.size + 0.3;
                             }
                         }
                     }
