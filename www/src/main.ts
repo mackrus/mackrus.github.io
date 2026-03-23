@@ -291,6 +291,41 @@ async function main() {
     let targetCameraPosition = new THREE.Vector3(0, 15, 30);
     let targetLookAt = new THREE.Vector3(0, 0, 0);
 
+    let spectralMode = false;
+    function toggleSpectralMode() {
+        spectralMode = !spectralMode;
+        
+        const applySpectral = (obj: THREE.Object3D) => {
+            if (obj instanceof THREE.Mesh) {
+                const mat = obj.material as THREE.MeshPhysicalMaterial;
+                if (spectralMode) {
+                    mat.wireframe = true;
+                    if (obj.name === "Sun") {
+                        mat.emissiveIntensity = 0.5;
+                    }
+                } else {
+                    mat.wireframe = false;
+                    if (obj.name === "Sun") {
+                        mat.emissiveIntensity = 1.5;
+                    }
+                }
+            }
+            obj.children.forEach(applySpectral);
+        };
+
+        scene.children.forEach(applySpectral);
+        
+        // Update UI hint if needed
+        const sunSection = document.getElementById("section-Sun");
+        if (sunSection) {
+            if (spectralMode) {
+                sunSection.innerHTML = `<h1>Markus Bajlo</h1><p class="hint spectral-active">[ SPECTRAL ANALYSIS ACTIVE ]</p>`;
+            } else {
+                sunSection.innerHTML = `<h1>Markus Bajlo</h1>`;
+            }
+        }
+    }
+
     let zoomFactor = 1.0;
     const minZoom = 0.5;
     const maxZoom = 3.0;
@@ -312,7 +347,12 @@ async function main() {
         }
     }
 
+    function resetSpectralMode() {
+        if (spectralMode) toggleSpectralMode();
+    }
+
     function setTarget(name: string) {
+        if (name !== "Sun") resetSpectralMode(); // Reset if moving away from Sun
         currentTargetName = name;
         zoomFactor = 1.0; // Reset zoom on target change
         updateActiveSection(name);
@@ -347,6 +387,10 @@ async function main() {
 
             if (foundName) {
                 if (currentTargetName === foundName) {
+                    if (foundName === "Sun") {
+                        toggleSpectralMode();
+                    }
+
                     // If already at a satellite, go to its planet
                     let parentPlanet = null;
                     for (const p of planetsData) {
